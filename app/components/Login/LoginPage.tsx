@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginPage() {
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loginIdentifier, setLoginIdentifier] = useState('EMP001');
@@ -12,6 +14,13 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      window.location.href = '/dashboard';
+    }
+  }, [isAuthenticated, authLoading]);
+
   // Array of login avatar images
   const loginImages = [
     '/assets/Image/loginavatar.jpg',
@@ -19,14 +28,26 @@ export default function LoginPage() {
     '/assets/Image/loginavatar3.jpg'
   ];
 
-  // Auto-change images every 2 seconds
+    // Auto-change images every 2 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % loginImages.length);
-    }, 2000);
+  }, 2000);
 
     return () => clearInterval(interval);
   }, [loginImages.length]);
+
+  // Show loading if auth is checking
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,8 +76,15 @@ export default function LoginPage() {
       if (response.ok) {
         // Login successful
         console.log('Login successful:', data);
-        // Here you can redirect to dashboard or store user data
+        
+        // Use AuthContext to login
+        login(data.data.employee);
+        
+        // Show success message briefly
         alert('Login successful! Welcome ' + data.data.employee.employeeName);
+        
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
       } else {
         // Login failed
         setError(data.error || 'Login failed');
@@ -214,23 +242,7 @@ export default function LoginPage() {
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
 
-            {/* Test API Button */}
-            <button
-              type="button"
-              onClick={async () => {
-                console.log('Testing API directly...');
-                try {
-                  const response = await fetch('/api/employees?page=1&limit=5');
-                  const data = await response.json();
-                  console.log('API Test Response:', data);
-                } catch (error) {
-                  console.error('API Test Error:', error);
-                }
-              }}
-              className="w-full mt-2 bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-            >
-              Test API Connection
-            </button>
+
 
             {/* Forgot Password Link */}
             <div className="text-center">
