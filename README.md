@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HRMS Next.js Application
 
-## Getting Started
+A modern HR Management System built with Next.js 15, React 19, and MongoDB.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 🎨 **Modern UI/UX**: Clean, responsive design with Tailwind CSS
+- 🔐 **User Authentication**: Secure login system with MongoDB integration
+- 🖼️ **Dynamic Content**: Auto-changing illustrations on the login page
+- 📱 **Responsive Design**: Works seamlessly on all devices
+- 🚀 **Fast Performance**: Built with Next.js 15 and Turbopack
+
+## Prerequisites
+
+- Node.js 18+ 
+- MongoDB running locally on port 27017
+- Database name: `hrms-dev`
+
+## Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd hrms_nextjs
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up MongoDB**
+   - Ensure MongoDB is running locally
+   - Create a database named `hrms-dev`
+   - The application will automatically connect to `mongodb://localhost:27017/hrms-dev`
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to `http://localhost:3000` (or the port shown in terminal)
+
+## Database Setup
+
+### MongoDB Connection
+The application automatically connects to your local MongoDB instance:
+- **Host**: localhost
+- **Port**: 27017
+- **Database**: hrms-dev
+
+### User Model
+The system includes a User model with the following fields:
+- `employeeCode` (unique identifier)
+- `email` (unique)
+- `password`
+- `firstName`, `lastName`
+- `role` (admin, employee, manager)
+- `isActive`
+- `lastLogin`
+- `createdAt`, `updatedAt`
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `GET /api/test-db` - Test database connection
+
+## Project Structure
+
+```
+hrms_nextjs/
+├── app/
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── login/
+│   │   │       └── route.js
+│   │   └── test-db/
+│   │       └── route.js
+│   ├── components/
+│   │   └── Login/
+│   │       └── LoginPage.tsx
+│   ├── assets/
+│   │   ├── Image/
+│   │   │   ├── loginavatar.jpg
+│   │   │   ├── loginavatar2.jpg
+│   │   │   └── loginavatar3.jpg
+│   │   └── Icon/
+│   │       └── ddHealthcare.png
+│   ├── layout.tsx
+│   └── page.tsx
+├── lib/
+│   ├── mongodb.js
+│   └── mongoose.js
+├── models/
+│   └── User.js
+├── config/
+│   └── database.js
+├── public/
+│   └── assets/
+└── package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: React 19 with TypeScript
+- **Styling**: Tailwind CSS
+- **Database**: MongoDB with Mongoose ODM
+- **API**: Next.js API Routes
+- **Build Tool**: Next.js 15 with Turbopack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Testing the Database Connection
 
-## Learn More
+1. Start the development server
+2. Visit `http://localhost:3000/api/test-db`
+3. You should see a success message if MongoDB is connected
 
-To learn more about Next.js, take a look at the following resources:
+## Login Testing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use the pre-filled employee code "495" or create a test user in your MongoDB database:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```javascript
+// In MongoDB shell or Compass
+use hrms-dev
+db.users.insertOne({
+  employeeCode: "495",
+  email: "test@example.com",
+  password: "password123",
+  firstName: "John",
+  lastName: "Doe",
+  role: "employee",
+  isActive: true
+})
+```
 
-## Deploy on Vercel
+## Production Considerations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Use environment variables for database credentials
+- Implement proper password hashing (bcrypt)
+- Add JWT or session-based authentication
+- Set up proper CORS and security headers
+- Use MongoDB Atlas for production database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Support
+
+For issues or questions, please check the project documentation or create an issue in the repository.

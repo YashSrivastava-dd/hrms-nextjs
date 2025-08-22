@@ -6,9 +6,11 @@ import Image from 'next/image';
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [employeeCode, setEmployeeCode] = useState('495');
-  const [password, setPassword] = useState('');
+  const [loginIdentifier, setLoginIdentifier] = useState('EMP001');
+  const [password, setPassword] = useState('12345');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Array of login avatar images
   const loginImages = [
@@ -17,7 +19,7 @@ export default function LoginPage() {
     '/assets/Image/loginavatar3.jpg'
   ];
 
-  // Auto-change images every 3 seconds
+  // Auto-change images every 2 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % loginImages.length);
@@ -26,10 +28,45 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, [loginImages.length]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { employeeCode, password, rememberMe });
+    setIsLoading(true);
+    setError('');
+
+    console.log('Attempting login with:', { loginIdentifier, password });
+
+    try {
+      const response = await fetch('/api/employees/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: loginIdentifier,
+          password,
+        }),
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Login successful
+        console.log('Login successful:', data);
+        // Here you can redirect to dashboard or store user data
+        alert('Login successful! Welcome ' + data.data.employee.employeeName);
+      } else {
+        // Login failed
+        setError(data.error || 'Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -90,21 +127,32 @@ export default function LoginPage() {
             <p className="text-gray-600">Please enter your details</p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-6">
-            {/* Employee Code/Email Field */}
+            {/* Email/Employee Code Field */}
             <div>
-              <label htmlFor="employeeCode" className="block text-sm font-medium text-gray-700 mb-2">
-                Employee Code / Email Address
+              <label htmlFor="loginIdentifier" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address or Employee Code
               </label>
               <input
                 type="text"
-                id="employeeCode"
-                value={employeeCode}
-                onChange={(e) => setEmployeeCode(e.target.value)}
+                id="loginIdentifier"
+                value={loginIdentifier}
+                onChange={(e) => setLoginIdentifier(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-black placeholder-gray-500"
-                placeholder="Enter employee code or email"
+                placeholder="Enter your email or employee code"
+                disabled={isLoading}
               />
+              <p className="mt-1 text-xs text-gray-500">
+                You can login using either your email address or employee code
+              </p>
             </div>
 
             {/* Password Field */}
@@ -120,11 +168,13 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors text-black placeholder-gray-500"
                   placeholder="Enter password"
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,6 +198,7 @@ export default function LoginPage() {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                disabled={isLoading}
               />
               <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
                 Remember Me
@@ -157,9 +208,28 @@ export default function LoginPage() {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+
+            {/* Test API Button */}
+            <button
+              type="button"
+              onClick={async () => {
+                console.log('Testing API directly...');
+                try {
+                  const response = await fetch('/api/employees?page=1&limit=5');
+                  const data = await response.json();
+                  console.log('API Test Response:', data);
+                } catch (error) {
+                  console.error('API Test Error:', error);
+                }
+              }}
+              className="w-full mt-2 bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            >
+              Test API Connection
             </button>
 
             {/* Forgot Password Link */}
