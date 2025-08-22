@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginPage() {
@@ -246,9 +247,9 @@ export default function LoginPage() {
 
             {/* Forgot Password Link */}
             <div className="text-center">
-              <a href="#" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              <Link href="/forgot-password" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                 Forget password?
-              </a>
+              </Link>
             </div>
           </form>
         </div>

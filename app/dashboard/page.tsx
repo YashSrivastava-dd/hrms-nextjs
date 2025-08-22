@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
 
-export default function DashboardPage() {
+export default function Dashboard() {
   const { employee: employeeData, isLoading, logout } = useAuth();
 
   if (isLoading) {
@@ -99,10 +99,10 @@ export default function DashboardPage() {
             </div>
             <h3 className="text-3xl font-bold mb-4">🚧 Dashboard Coming Soon! 🚧</h3>
             <p className="text-xl mb-6 opacity-90">
-              We're working hard to bring you an amazing HRMS experience
+              We&apos;re working hard to bring you an amazing HRMS experience
             </p>
             <div className="bg-white bg-opacity-20 rounded-lg p-6 backdrop-blur-sm">
-              <h4 className="text-lg font-semibold mb-3">What's Coming:</h4>
+              <h4 className="text-lg font-semibold mb-3">What&apos;s Coming:</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="bg-white bg-opacity-20 rounded p-3">
                   <div className="font-semibold mb-1">📊 Analytics</div>

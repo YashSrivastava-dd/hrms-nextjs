@@ -67,6 +67,7 @@ export interface IEmployee extends Document {
   maxShortLeave: string;
   otp: string;
   isOtpVerified: boolean;
+  otpExpiry?: Date;
   leaveBalance: ILeaveBalance;
   role: string;
   isProbation: boolean;
@@ -143,6 +144,7 @@ const employeeSchema = new Schema<IEmployee>({
   maxShortLeave: { type: String, default: "1" },
   otp: { type: String, default: "" },
   isOtpVerified: { type: Boolean, default: false },
+  otpExpiry: { type: Date, required: false },
   leaveBalance: { type: leaveBalanceSchema, default: () => ({}) },
   role: {
     type: String,
