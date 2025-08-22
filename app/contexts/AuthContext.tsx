@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Employee {
   _id: string;
@@ -27,6 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [employee, setEmployee] = useState<Employee | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     // Check if user is already logged in
@@ -48,10 +50,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('employeeData', JSON.stringify(employeeData));
   };
 
-  const logout = () => {
-    setEmployee(null);
-    localStorage.removeItem('employeeData');
-    window.location.href = '/';
+  const logout = async () => {
+    try {
+      // Clear all authentication-related data
+      setEmployee(null);
+      localStorage.removeItem('employeeData');
+      
+      // Clear any other stored data that might be related to the session
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      sessionStorage.clear();
+      
+      // Clear any cookies if they exist
+      document.cookie.split(";").forEach((c) => {
+        const eqPos = c.indexOf("=");
+        const name = eqPos > -1 ? c.substr(0, eqPos) : c;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      });
+
+      // Call logout API endpoint for server-side cleanup
+      try {
+        await fetch('/api/employees/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch (error) {
+        console.error('Logout API call failed:', error);
+        // Continue with logout even if API call fails
+      }
+
+      // Redirect to login page using Next.js router
+      router.push('/');
+      router.refresh(); // Force a refresh to clear any cached data
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Fallback: force redirect even if there's an error
+      router.push('/');
+    }
   };
 
   const value: AuthContextType = {

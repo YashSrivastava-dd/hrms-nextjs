@@ -9,11 +9,56 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [loginIdentifier, setLoginIdentifier] = useState('EMP001');
-  const [password, setPassword] = useState('12345');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Load saved credentials when component mounts
+  useEffect(() => {
+    const savedCredentials = localStorage.getItem('savedCredentials');
+    if (savedCredentials) {
+      try {
+        const { loginIdentifier: savedId, password: savedPassword, rememberMe: savedRememberMe } = JSON.parse(savedCredentials);
+        if (savedRememberMe) {
+          setLoginIdentifier(savedId || '');
+          setPassword(savedPassword || '');
+          setRememberMe(true);
+        }
+      } catch (error) {
+        console.error('Error loading saved credentials:', error);
+        localStorage.removeItem('savedCredentials');
+      }
+    }
+  }, []);
+
+  // Save credentials when remember me is checked
+  const handleRememberMeChange = (checked: boolean) => {
+    setRememberMe(checked);
+    if (checked && loginIdentifier && password) {
+      // Save current credentials
+      localStorage.setItem('savedCredentials', JSON.stringify({
+        loginIdentifier,
+        password,
+        rememberMe: true
+      }));
+    } else if (!checked) {
+      // Clear saved credentials
+      localStorage.removeItem('savedCredentials');
+    }
+  };
+
+  // Save credentials when form fields change and remember me is checked
+  useEffect(() => {
+    if (rememberMe && loginIdentifier && password) {
+      localStorage.setItem('savedCredentials', JSON.stringify({
+        loginIdentifier,
+        password,
+        rememberMe: true
+      }));
+    }
+  }, [loginIdentifier, password, rememberMe]);
 
   // Redirect to dashboard if already logged in
   useEffect(() => {
@@ -77,6 +122,15 @@ export default function LoginPage() {
       if (response.ok) {
         // Login successful
         console.log('Login successful:', data);
+        
+        // Save credentials if "Remember Me" is checked
+        if (rememberMe && loginIdentifier && password) {
+          localStorage.setItem('savedCredentials', JSON.stringify({
+            loginIdentifier,
+            password,
+            rememberMe: true
+          }));
+        }
         
         // Use AuthContext to login
         login(data.data.employee);
@@ -225,7 +279,7 @@ export default function LoginPage() {
                 type="checkbox"
                 id="rememberMe"
                 checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                onChange={(e) => handleRememberMeChange(e.target.checked)}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 disabled={isLoading}
               />
